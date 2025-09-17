@@ -1,12 +1,12 @@
 
 # MeetingCosts - A Teams Meeting App to estimate meeting costs
-This Teams meeting app provides an estimated total cost of a meeting based on its duration and the assumed cost of participants by job title. It was built using [Microsoft 365 Agents Toolkit](https://aka.ms/teams-toolkit) and [Teams Client Library](https://learn.microsoft.com/en-us/javascript/api/overview/msteams-client?view=msteams-client-js-latest).
+In today’s workplace, meetings consume a significant portion of employees’ time and resources, but organizations often lack visibility into the true cost of these meetings. Without a way to quantify the financial impact, it’s difficult to evaluate whether the outcomes justify the expense. This can lead to inefficient meeting practices, wasted time, and hidden costs that accumulate across teams and departments. Leaders and employees alike need a simple way to understand the economic value of their meetings to drive more intentional, productive collaboration.
 
-It needs to be added in a Teams meeting and will detect the meeting duration and participants automatically. The app will use a predefined cost for each job title to estimate the total cost of the meeting.
+MeetingCosts is a Microsoft Teams meeting app that provides an estimate of the total cost of any meeting. Using the Microsoft 365 Agents Toolkit and the Teams Client Library, the app automatically detects the meeting’s duration and participants. It then applies predefined cost assumptions based on participants’ job titles to calculate the overall expense.
 
-The app uses a Azure Logic App to handle the business logic and can be easily customized to fit your needs. If you need to customize the cost per job title, you can edit the logic app workflow in Azure Portal and include a specific action to update the cost per job title or other logic you may need.
+The app’s logic is powered by an Azure Logic App, making it easy to customize. Users can update cost estimates per job title or add custom rules directly through the Azure Portal. By integrating seamlessly into Teams meetings, MeetingCosts helps organizations gain transparency into meeting costs, promote more effective use of time, and encourage smarter decision-making.
 
-A possible improvement to this app would be activate the MCP server configuration in the logic apps so we can turn the logic app into a tool in the MCP server and then have a Copilot Agent to interact with the logic app. This way we can have a more interactive experience with the app and have a Copilot Agent to help us with the meeting costs estimation when added in a meeting.
+Future improvements could include enabling MCP server configuration so the Logic App can act as a tool for Copilot Agents. This would allow users to interact with the cost estimation logic conversationally, creating a more dynamic and AI-powered experience inside Teams.
 
 ![MeetingCosts app screenshot showing cost estimation UI](images/2025-09-17_14-48.png)
 
