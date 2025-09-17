@@ -8,7 +8,7 @@ The app uses a Azure Logic App to handle the business logic and can be easily cu
 
 A possible improvement to this app would be activate the MCP server configuration in the logic apps so we can turn the logic app into a tool in the MCP server and then have a Copilot Agent to interact with the logic app. This way we can have a more interactive experience with the app and have a Copilot Agent to help us with the meeting costs estimation when added in a meeting.
 
-![MeetingCosts app screenshot showing cost estimation UI](images\2025-09-17_14-48.png)
+![MeetingCosts app screenshot showing cost estimation UI](images/2025-09-17_14-48.png)
 
 > App Caching was configured in this sample to reduce the reload time of your app in a meeting. To learn about limitations and available scopes, please check [Enable app caching for your tab app](https://aka.ms/teamsfx-app-caching).
 
