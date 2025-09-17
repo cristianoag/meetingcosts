@@ -1,0 +1,343 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ]
+                    }
+                },
+                "description": "Receives the meetingId"
+            }
+        },
+        "actions": {
+            "Get_the_Meeting_JoinURL": {
+                "runAfter": {},
+                "type": "Http",
+                "inputs": {
+                    "uri": "https://graph.microsoft.com/v1.0/chats/@{triggerBody()?['meetingId']}",
+                    "method": "GET",
+                    "authentication": {
+                        "type": "ActiveDirectoryOAuth",
+                        "tenant": "<tenantid>",
+                        "audience": "https://graph.microsoft.com",
+                        "clientId": "<clientid>",
+                        "secret": "<secret>"
+                    }
+                },
+                "runtimeConfiguration": {
+                    "contentTransfer": {
+                        "transferMode": "Chunked"
+                    }
+                }
+            },
+            "Parse_JSON": {
+                "runAfter": {
+                    "Get_the_Meeting_JoinURL": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@body('Get_the_Meeting_JoinURL')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "@@odata.context": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastUpdatedDateTime": {
+                                "type": "string"
+                            },
+                            "chatType": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "tenantId": {
+                                "type": "string"
+                            },
+                            "isHiddenForAllMembers": {
+                                "type": "boolean"
+                            },
+                            "viewpoint": {},
+                            "onlineMeetingInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "calendarEventId": {},
+                                    "joinWebUrl": {
+                                        "type": "string"
+                                    },
+                                    "organizer": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "displayName": {},
+                                            "userIdentityType": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Compose": {
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Compose",
+                "inputs": "@body('Parse_JSON')?['onlineMeetingInfo']?['joinWebUrl']"
+            },
+            "Get_the_Meeting_Participants": {
+                "runAfter": {
+                    "Compose": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Http",
+                "inputs": {
+                    "uri": "https://graph.microsoft.com/v1.0/users/@{body('Parse_JSON')?['onlineMeetingInfo']?['organizer']?['id']}/onlineMeetings?$filter=JoinWebUrl eq '@{body('Parse_JSON')?['onlineMeetingInfo']?['joinWebUrl']}'",
+                    "method": "GET",
+                    "authentication": {
+                        "type": "ActiveDirectoryOAuth",
+                        "tenant": "<tenantid>",
+                        "audience": "https://graph.microsoft.com",
+                        "clientId": "<clientid>",
+                        "secret": "<secret>"
+                    }
+                },
+                "runtimeConfiguration": {
+                    "contentTransfer": {
+                        "transferMode": "Chunked"
+                    }
+                }
+            },
+            "Parse_JSON_1": {
+                "runAfter": {
+                    "Get_the_Meeting_Participants": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@body('Get_the_Meeting_Participants')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "participants": {
+                                            "type": "object",
+                                            "properties": {
+                                                "organizer": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "upn": {
+                                                            "type": "string"
+                                                        },
+                                                        "role": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "attendees": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "upn": {
+                                                                "type": "string"
+                                                            },
+                                                            "role": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Initialize_variables": {
+                "runAfter": {
+                    "Parse_JSON_1": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable",
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "participants",
+                            "type": "array",
+                            "value": []
+                        }
+                    ]
+                }
+            },
+            "Append_to_array_variable": {
+                "runAfter": {
+                    "Get_user_profile_(V2)": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "AppendToArrayVariable",
+                "inputs": {
+                    "name": "participants",
+                    "value": {
+                        "upn": "@{body('Parse_JSON_1')?['value']?[0]?['participants']?['organizer']?['upn']}",
+                        "role": "@{body('Parse_JSON_1')?['value']?[0]?['participants']?['organizer']?['role']}",
+                        "name": "@{body('Get_user_profile_(V2)')?['displayName']}",
+                        "cost": "@{rand(53,112)}",
+                        "jobtitle": "@{body('Get_user_profile_(V2)')?['jobTitle']}"
+                    }
+                }
+            },
+            "Compose_1": {
+                "runAfter": {
+                    "For_each_1": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Compose",
+                "inputs": {
+                    "participants": "@{variables('participants')}"
+                }
+            },
+            "For_each_1": {
+                "foreach": "@outputs('Parse_JSON_1')?['body']?['value']",
+                "actions": {
+                    "For_each": {
+                        "foreach": "@items('For_each_1')?['participants']?['attendees']",
+                        "actions": {
+                            "Append_to_array_variable_1": {
+                                "runAfter": {
+                                    "Get_user_profile_(V2)_1": [
+                                        "Succeeded"
+                                    ]
+                                },
+                                "type": "AppendToArrayVariable",
+                                "inputs": {
+                                    "name": "participants",
+                                    "value": {
+                                        "upn": "@{items('For_each')?['upn']}",
+                                        "role": "@{items('For_each')?['role']}",
+                                        "name": "@{body('Get_user_profile_(V2)_1')?['displayName']}",
+                                        "cost": "@{rand(36,200)}",
+                                        "jobtitle": "@{body('Get_user_profile_(V2)_1')?['jobTitle']}"
+                                    }
+                                }
+                            },
+                            "Get_user_profile_(V2)_1": {
+                                "type": "ApiConnection",
+                                "inputs": {
+                                    "host": {
+                                        "connection": {
+                                            "name": "@parameters('$connections')['office365users']['connectionId']"
+                                        }
+                                    },
+                                    "method": "get",
+                                    "path": "/codeless/v1.0/users/@{encodeURIComponent(items('For_each')?['upn'])}"
+                                }
+                            }
+                        },
+                        "type": "Foreach"
+                    }
+                },
+                "runAfter": {
+                    "Append_to_array_variable": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Foreach"
+            },
+            "Response": {
+                "runAfter": {
+                    "Compose_1": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response",
+                "kind": "Http",
+                "inputs": {
+                    "statusCode": 200,
+                    "body": "@outputs('Compose_1')"
+                }
+            },
+            "Get_user_profile_(V2)": {
+                "runAfter": {
+                    "Initialize_variables": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['office365users']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/codeless/v1.0/users/@{encodeURIComponent(body('Parse_JSON_1')?['value']?[0]?['participants']?['organizer']?['upn'])}"
+                }
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "office365users": {
+                    "id": "/subscriptions/3e6cc71e-0783-437b-bbd7-b514eea261bd/providers/Microsoft.Web/locations/northcentralus/managedApis/office365users",
+                    "connectionId": "/subscriptions/3e6cc71e-0783-437b-bbd7-b514eea261bd/resourceGroups/MeetingCosts/providers/Microsoft.Web/connections/office365users",
+                    "connectionName": "office365users"
+                }
+            }
+        }
+    }
+}

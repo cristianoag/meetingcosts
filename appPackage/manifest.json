@@ -1,0 +1,55 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.17",
+    "version": "1.0.0",
+    "id": "${{TEAMS_APP_ID}}",
+    "developer": {
+        "name": "Cristiano Goncalves",
+        "websiteUrl": "${{TAB_ENDPOINT}}",
+        "privacyUrl": "${{TAB_ENDPOINT}}/index.html#/privacy",
+        "termsOfUseUrl": "${{TAB_ENDPOINT}}/index.html#/termsofuse"
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
+    },
+    "name": {
+        "short": "Meeting Costs (${{APP_NAME_SUFFIX}})",
+        "full": "App to estimate meeting costs (${{APP_NAME_SUFFIX}})"
+    },
+    "description": {
+        "short": "App",
+        "full": "An app to estimate the cost of a meeting based on its duration and the assumed cost of participants by job title."
+    },
+    "accentColor": "#FFFFFF",
+    "bots": [],
+    "composeExtensions": [],
+    "configurableTabs": [],
+    "staticTabs": [
+        {
+            "entityId": "index",
+            "name": "MeetingCosts",
+            "contentUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
+            "websiteUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
+            "scopes": [
+                "team",
+                "groupChat"
+              ],
+              "context": [
+                "meetingSidePanel"
+            ]
+        }
+    ],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "webApplicationInfo": {
+        "id": "${{AAD_APP_ID}}",
+        "resource": "api://${{AAD_APP_ID}}"
+    },
+    "validDomains": [
+        "${{TAB_HOSTNAME}}"
+    ],
+    "showLoadingIndicator": false
+}
